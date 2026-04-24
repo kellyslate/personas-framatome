@@ -38,142 +38,175 @@
             outline: 2px solid #00A3E0;
             border-radius: 0.25rem;
         }
-        /* Cache les éléments non désirés lors de la génération du PDF si nécessaire */
+        /* Cache les éléments non désirés lors de la génération du PDF */
         .pdf-hide {
             display: none !important;
+        }
+        /* Empêche le PDF de couper un bloc en plein milieu */
+        .avoid-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-6 font-sans text-gray-800">
 
     <div class="max-w-5xl mx-auto">
+        <!-- Barre d'action supérieure -->
         <div class="flex justify-between items-center mb-6" id="actionHeader">
             <div>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Framatome_logo.svg/3840px-Framatome_logo.svg.png" alt="Framatome Logo" class="h-10">
+                <h2 class="text-2xl font-bold text-gray-700"><i class="fas fa-users-cog text-frama-blue mr-2"></i>Générateur de Persona</h2>
             </div>
             <div class="flex gap-3">
-                <button onclick="downloadPDF()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition shadow-sm text-sm font-medium flex items-center">
-                    <i class="fas fa-file-pdf mr-2"></i> Exporter en PDF
+                <button onclick="downloadPDF()" class="bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition shadow-md text-sm font-bold flex items-center">
+                    <i class="fas fa-file-pdf mr-2 text-lg"></i> Exporter en PDF
                 </button>
             </div>
         </div>
 
-        <div id="personaCard" class="bg-white shadow-lg overflow-hidden border border-gray-200">
+        <!-- Conteneur avec défilement horizontal pour les petits écrans -->
+        <div class="w-full overflow-x-auto pb-8 flex justify-center">
             
-            <div class="bg-frama-blue text-white p-8 relative">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-frama-accent opacity-20 rounded-bl-full pointer-events-none"></div>
+            <!-- Fiche Persona : Largeur fixée à A4 (794px), Hauteur minimale A4 mais extensible -->
+            <div id="personaCard" class="bg-white shadow-xl border border-gray-300 flex-shrink-0 flex flex-col relative" style="width: 794px; min-height: 1123px;">
                 
-                <div class="flex items-center gap-8 relative z-10">
+                <!-- SECTION 1 : IDENTITÉ & PROFIL -->
+                <div class="bg-frama-blue text-white p-8 relative flex-shrink-0">
                     
-                    <div class="relative group">
-                        <div id="photoContainer" class="w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center text-frama-blue shadow-md border-4 border-white flex-shrink-0 cursor-pointer overflow-hidden bg-cover bg-center" onclick="document.getElementById('imageUpload').click()">
-                            <div id="photoPlaceholder" class="flex flex-col items-center">
-                                <i class="fas fa-camera fa-2x mb-1 text-gray-300"></i>
-                                <span class="text-[10px] font-bold uppercase text-gray-400">Ajouter</span>
-                            </div>
-                        </div>
-                        <input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    <!-- NOUVEAU : Logo Framatome plus petit -->
+                    <div class="absolute top-6 right-8 z-20 bg-white px-2 py-1.5 rounded shadow-sm">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Framatome_logo.svg/3840px-Framatome_logo.svg.png" alt="Framatome Logo" class="h-5">
                     </div>
 
-                    <div class="flex-1">
-                        <div class="text-frama-accent font-semibold text-sm mb-1 uppercase tracking-wider" id="personaType" contenteditable="true">Type de Persona (ex: Opérateur Usinage)</div>
-                        <h1 class="text-4xl font-bold mb-2" id="personaName" contenteditable="true">Prénom, Âge</h1>
-                        <h2 class="text-xl font-light border-b border-white/30 pb-3 mb-3" contenteditable="true"><i class="fas fa-briefcase mr-2"></i>Intitulé précis du poste</h2>
-                        
-                        <div class="flex gap-6 text-sm">
-                            <div class="flex items-center">
-                                <i class="fas fa-clock mr-2 text-frama-accent"></i>
-                                <span contenteditable="true">Ancienneté : 5 ans</span>
+                    <!-- Décoration graphique -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-frama-accent opacity-20 rounded-bl-full pointer-events-none z-0"></div>
+                    
+                    <div class="flex items-center gap-8 relative z-10">
+                        <!-- Photo Upload Interactive -->
+                        <div class="relative group">
+                            <div id="photoContainer" class="w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center text-frama-blue shadow-md border-4 border-white flex-shrink-0 cursor-pointer overflow-hidden bg-cover bg-center" onclick="document.getElementById('imageUpload').click()">
+                                <div id="photoPlaceholder" class="flex flex-col items-center">
+                                    <i class="fas fa-camera fa-2x mb-1 text-gray-300"></i>
+                                    <span class="text-[10px] font-bold uppercase text-gray-400">Ajouter</span>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt mr-2 text-frama-accent"></i>
-                                <span contenteditable="true">Localisation : Usine X</span>
+                            <input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="previewImage(event)">
+                        </div>
+
+                        <!-- Infos clés -->
+                        <div class="flex-1 pr-24"> <!-- Espace pour le logo ajusté -->
+                            <div class="text-frama-accent font-semibold text-sm mb-1 uppercase tracking-wider" id="personaType" contenteditable="true">Type de Persona (ex: Utilisateur Final - Terrain)</div>
+                            <h1 class="text-4xl font-bold mb-2" id="personaName" contenteditable="true">Prénom, Âge</h1>
+                            <h2 class="text-xl font-light border-b border-white/30 pb-3 mb-3" contenteditable="true"><i class="fas fa-briefcase mr-2"></i>Opérateur de production (Soudure, Assemblage, Test)</h2>
+                            
+                            <div class="flex gap-6 text-sm">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock mr-2 text-frama-accent"></i>
+                                    <span contenteditable="true">Ancienneté : 8 ans</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt mr-2 text-frama-accent"></i>
+                                    <span contenteditable="true">Localisation : Site Framatome, Grenoble</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-frama-light p-6 text-center border-b border-gray-200">
-                <i class="fas fa-quote-left text-frama-accent text-xl mr-2 opacity-50"></i>
-                <span class="text-lg font-medium italic text-frama-blue" contenteditable="true">"Cliquez ici pour ajouter la phrase marquante qui résume l'état d'esprit du collaborateur face à la documentation actuelle."</span>
-                <i class="fas fa-quote-right text-frama-accent text-xl ml-2 opacity-50"></i>
-            </div>
-
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                
-                <div class="space-y-8">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-frama-blue pl-3 flex items-center">
-                            <i class="fas fa-industry text-frama-accent mr-2 w-6"></i>Environnement de travail
-                        </h3>
-                        <div class="text-gray-600 bg-gray-50 p-4 rounded-lg min-h-[100px]" contenteditable="true">
-                            Décrivez ici les conditions physiques : bruit, port d'EPI, déplacements, salissures...
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-frama-blue pl-3 flex items-center">
-                            <i class="fas fa-tasks text-frama-accent mr-2 w-6"></i>Missions principales
-                        </h3>
-                        <div class="text-gray-600 bg-gray-50 p-4 rounded-lg min-h-[100px]" contenteditable="true">
-                            • Mission 1<br>
-                            • Mission 2<br>
-                            • Mission 3
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-frama-blue pl-3 flex items-center">
-                            <i class="fas fa-folder-open text-frama-accent mr-2 w-6"></i>Outils documentaires
-                        </h3>
-                        <div class="text-gray-600 bg-gray-50 p-4 rounded-lg min-h-[100px]" contenteditable="true">
-                            Dossiers papier, tampons, classeurs, ERP sur PC fixe...
-                        </div>
-                    </div>
+                <!-- Citation (Verbatim) -->
+                <div class="bg-frama-light p-5 text-center border-b border-gray-200 flex-shrink-0">
+                    <i class="fas fa-quote-left text-frama-accent text-xl mr-2 opacity-50"></i>
+                    <span class="text-lg font-medium italic text-frama-blue" contenteditable="true">"Entre les dossiers papier qu'on cherche partout dans l'atelier et les fiches de suivi qui finissent tachées ou déchirées, gérer la paperasse est devenu plus compliqué que mon travail de soudure."</span>
+                    <i class="fas fa-quote-right text-frama-accent text-xl ml-2 opacity-50"></i>
                 </div>
 
-                <div class="space-y-8">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-frama-accent pl-3 flex items-center">
-                            <i class="fas fa-laptop text-frama-blue mr-2 w-6"></i>Aisance Numérique
-                        </h3>
-                        <div class="text-gray-600 bg-gray-50 p-4 rounded-lg min-h-[100px]" contenteditable="true">
-                            Niveau d'appétence, utilisation de smartphones dans la vie privée vs pro.
+                <!-- SECTION 2 : DÉTAILS -->
+                <!-- Retrait de h-full pour laisser s'étendre naturellement -->
+                <div class="p-8 grid grid-cols-2 gap-8 flex-1 pb-16">
+                    
+                    <!-- Colonne Gauche -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Environnement (avoid-break pour ne pas couper au milieu) -->
+                        <div class="flex flex-col avoid-break">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 border-l-4 border-frama-blue pl-3 flex items-center">
+                                <i class="fas fa-industry text-frama-accent mr-2 w-6"></i>Environnement de travail
+                            </h3>
+                            <div class="text-gray-600 bg-gray-50 p-4 rounded-lg" contenteditable="true">
+                                Environnement industriel (atelier). Changement de poste quotidien selon le planning du matin (îlot de soudure, zone d'assemblage ou banc de test). Port d'EPI obligatoire (gants, lunettes, masque). Espace de travail parfois exigu pour poser et utiliser un PC portable standard à l'abri des salissures ou des étincelles.
+                            </div>
+                        </div>
+
+                        <!-- Missions -->
+                        <div class="flex flex-col avoid-break">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 border-l-4 border-frama-blue pl-3 flex items-center">
+                                <i class="fas fa-tasks text-frama-accent mr-2 w-6"></i>Missions principales
+                            </h3>
+                            <div class="text-gray-600 bg-gray-50 p-4 rounded-lg" contenteditable="true">
+                                • Fabriquer et tester les pièces en atelier selon le planning du jour.<br>
+                                • Noter tout ce qui a été fait pour garantir le suivi de chaque pièce (traçabilité).<br>
+                                • Remplir et signer les dossiers de fabrication papier après chaque étape terminée.
+                            </div>
+                        </div>
+
+                        <!-- Outils actuels -->
+                        <div class="flex flex-col avoid-break">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 border-l-4 border-frama-blue pl-3 flex items-center">
+                                <i class="fas fa-folder-open text-frama-accent mr-2 w-6"></i>Outils documentaires
+                            </h3>
+                            <div class="text-gray-600 bg-gray-50 p-4 rounded-lg" contenteditable="true">
+                                • Dossiers de production au format papier (liasses, fiches suiveuses, plans imprimés).<br>
+                                • Stylos et tampons encreurs pour la validation des différentes étapes de fabrication.<br>
+                                • PC portable (mis à disposition) souvent relégué à la consultation de l'ERP ou à la double saisie en fin de journée.
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <h3 class="text-lg font-bold text-red-700 mb-3 border-l-4 border-red-500 pl-3 flex items-center">
-                            <i class="fas fa-exclamation-triangle text-red-500 mr-2 w-6"></i>Frustrations (Pain points)
-                        </h3>
-                        <div class="text-gray-600 bg-red-50 p-4 rounded-lg border border-red-100 min-h-[100px]" contenteditable="true">
-                            • Perte de temps à chercher l'information<br>
-                            • Saisie en double<br>
-                            • Risque d'utiliser le mauvais indice
+                    <!-- Colonne Droite -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Aisance numérique -->
+                        <div class="flex flex-col avoid-break">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 border-l-4 border-frama-accent pl-3 flex items-center">
+                                <i class="fas fa-laptop text-frama-blue mr-2 w-6"></i>Aisance Numérique
+                            </h3>
+                            <div class="text-gray-600 bg-gray-50 p-4 rounded-lg" contenteditable="true">
+                                A l'aise avec la technologie dans le domaine privé (smartphone, tablette) et habitué à utiliser le PC portable de l'usine. Cependant, taper sur un clavier ou utiliser un touchpad avec des mains sales ou des gants n'est ni naturel ni ergonomique pour lui.
+                            </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <h3 class="text-lg font-bold text-green-700 mb-3 border-l-4 border-green-500 pl-3 flex items-center">
-                            <i class="fas fa-check-circle text-green-500 mr-2 w-6"></i>Besoins & Attentes
-                        </h3>
-                        <div class="text-gray-600 bg-green-50 p-4 rounded-lg border border-green-100 min-h-[100px]" contenteditable="true">
-                            • Interface simplifiée (gros boutons)<br>
-                            • Signature en 1 clic<br>
-                            • Remontée des infos en temps réel
+                        <!-- Frustrations -->
+                        <div class="flex flex-col avoid-break">
+                            <h3 class="text-lg font-bold text-red-700 mb-2 border-l-4 border-red-500 pl-3 flex items-center">
+                                <i class="fas fa-exclamation-triangle text-red-500 mr-2 w-6"></i>Frustrations (Pain points)
+                            </h3>
+                            <div class="text-gray-600 bg-red-50 p-4 rounded-lg border border-red-100" contenteditable="true">
+                                • <strong>Vulnérabilité du papier :</strong> Les dossiers physiques s'abîment très vite dans l'atelier.<br>
+                                • <strong>Traçabilité fastidieuse :</strong> Remplir les fiches à la main avec les EPI est inconfortable.<br>
+                                • <strong>Perte de temps :</strong> Chercher physiquement "où est passé le dossier papier" lors des changements de poste.<br>
+                                • <strong>Double saisie :</strong> Devoir noter l'avancement manuellement, puis reporter sur le PC portable.
+                            </div>
+                        </div>
+
+                        <!-- Attentes -->
+                        <div class="flex flex-col avoid-break">
+                            <h3 class="text-lg font-bold text-green-700 mb-2 border-l-4 border-green-500 pl-3 flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2 w-6"></i>Besoins & Attentes
+                            </h3>
+                            <div class="text-gray-600 bg-green-50 p-4 rounded-lg border border-green-100" contenteditable="true">
+                                • <strong>Zéro papier :</strong> Une tablette durcie ou un écran fixe au poste.<br>
+                                • <strong>Saisie flash et tactile :</strong> Fini le stylo. Des cases à cocher tactiles (avec gants) et un scan (code-barres/QR) pour valider les étapes.<br>
+                                • <strong>Information en temps réel :</strong> La certitude d'avoir la bonne version du document.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 shadow-sm" id="infoBox">
+        <div class="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 shadow-sm" id="infoBox">
             <i class="fas fa-lightbulb text-blue-500 text-lg mb-2"></i> <strong>Astuces d'utilisation :</strong>
             <ul class="list-disc pl-5 mt-1 space-y-1">
-                <li>Cliquez sur le cercle photo pour charger une image de votre ordinateur.</li>
-                <li>Modifiez les textes à votre convenance.</li>
-                <li>Cliquez sur "Exporter en PDF" : l'outil générera un fichier A4 propre sans cet encart d'aide ni les boutons du haut.</li>
+                <li>Vous pouvez ajouter autant de texte que nécessaire. Si une rubrique est trop longue pour la page 1, l'outil l'exportera proprement sur la page 2 sans la couper au milieu.</li>
+                <li>Cliquez sur le cercle photo pour charger l'image de votre Persona.</li>
             </ul>
         </div>
     </div>
@@ -195,29 +228,27 @@
 
         // Fonction pour générer le PDF
         function downloadPDF() {
-            // Récupérer la div à convertir
             const element = document.getElementById('personaCard');
             
-            // Générer un nom de fichier dynamique basé sur le contenu
+            // Générer un nom de fichier dynamique
             let nameContent = document.getElementById('personaName').innerText.split(',')[0].trim();
             let safeName = nameContent.replace(/[^a-z0-9]/gi, '_').toLowerCase();
             let fileName = `Persona_Framatome_${safeName || 'Template'}.pdf`;
 
-            // Options de la librairie html2pdf
+            // Configuration html2pdf ajustée pour les sauts de page
             const opt = {
-                margin:       0, // Marges à 0 car notre design a déjà des paddings internes
+                margin:       0, 
                 filename:     fileName,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, // scale: 2 améliore la netteté du PDF, useCORS permet de charger le logo framatome
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                // Instruction spéciale pour éviter de couper les éléments ayant la classe "avoid-break"
+                pagebreak:    { mode: ['css', 'legacy'], avoid: '.avoid-break' }
             };
 
-            // Modification temporaire du curseur pour indiquer le chargement
             document.body.style.cursor = 'wait';
 
-            // Lancement de la génération
             html2pdf().set(opt).from(element).save().then(() => {
-                // Remise à la normale du curseur
                 document.body.style.cursor = 'default';
             });
         }
